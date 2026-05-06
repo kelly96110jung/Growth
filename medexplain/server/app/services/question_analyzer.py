@@ -87,9 +87,11 @@ def analyze_questions(text: str) -> dict:
             from google import genai
             client = genai.Client(api_key=api_key)
             prompt = _build_prompt(text)
+            from google.genai import types
             response = client.models.generate_content(
                 model="gemini-2.5-flash",
                 contents=prompt,
+                config=types.GenerateContentConfig(temperature=0.3),
             )
             raw = (response.text or "").strip()
             return _parse_response(raw)

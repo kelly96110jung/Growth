@@ -9,6 +9,7 @@ from app.models.schemas import (
     RecordDetailResponse,
     RecordListItem,
     RecordListResponse,
+    StructuredInfo,
 )
 
 router = APIRouter()
@@ -118,6 +119,8 @@ def create_record(request: RecordCreateRequest):
         "clean_text": request.clean_text.strip(),
         "summary": _normalize_summary(request.summary),
         "terms": _normalize_terms_for_save(request.terms),
+        "memo": request.memo.strip() if request.memo else None,
+        "structured": request.structured.model_dump() if request.structured else None,
     }
 
     records.append(new_record)
@@ -156,6 +159,8 @@ def get_record_detail(record_id: str):
 
     for record in records:
         if record["record_id"] == record_id:
+            raw_structured = record.get("structured")
+            structured = StructuredInfo(**raw_structured) if raw_structured else None
             return RecordDetailResponse(
                 record_id=record["record_id"],
                 date=record["date"],
@@ -163,6 +168,20 @@ def get_record_detail(record_id: str):
                 clean_text=record["clean_text"],
                 summary=record.get("summary", []),
                 terms=_normalize_terms_for_detail(record.get("terms", [])),
+                memo=record.get("memo"),
+                structured=structured,
             )
 
     raise HTTPException(status_code=404, detail="Record not found")
+
+
+@router.delete("/records/{record_id}")
+def delete_record(record_id: str):
+    records = load_records()
+    new_records = [r for r in records if r["record_id"] != record_id]
+
+    if len(new_records) == len(records):
+        raise HTTPException(status_code=404, detail="Record not found")
+
+    save_records(new_records)
+    return {"message": "deleted"}

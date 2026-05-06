@@ -11,8 +11,15 @@ class TermItem(BaseModel):
     description: str
 
 
+class StructuredInfo(BaseModel):
+    symptoms: List[str] = []
+    measurements: List[str] = []
+    medications: List[str] = []
+
+
 class SummaryResponse(BaseModel):
     summary: List[str]
+    structured: Optional[StructuredInfo] = None
 
 
 class ExplainResponse(BaseModel):
@@ -25,6 +32,8 @@ class RecordCreateRequest(BaseModel):
     clean_text: str
     summary: List[str]
     terms: List[TermItem]
+    memo: Optional[str] = None
+    structured: Optional[StructuredInfo] = None
 
 
 class RecordListItem(BaseModel):
@@ -45,6 +54,8 @@ class RecordDetailResponse(BaseModel):
     clean_text: str
     summary: List[str]
     terms: List[TermItem]
+    memo: Optional[str] = None
+    structured: Optional[StructuredInfo] = None
 
 
 # ── 사전 질문 정리 ──────────────────────────────────────
